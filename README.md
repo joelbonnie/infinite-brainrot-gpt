@@ -1,2 +1,2 @@
-# infinite-brainrot-gpt
+# infinite brainrot gpt
 Infinite Brainrot
