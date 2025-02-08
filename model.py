@@ -33,8 +33,8 @@ dropout = 0.2
 ####################
 ## Constants 
 
-dataset_path = ""
-weights_path = ""
+dataset_path = "input.txt"
+weights_path = "weights.pth"
 
 ####################
 
