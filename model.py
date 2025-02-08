@@ -3,7 +3,7 @@
 
 import torch
 import torch.nn as nn
-from nn import functional as F
+from torch.nn import functional as F
 
 
 
@@ -112,19 +112,32 @@ with open(dataset_path, 'r', encoding='utf-8') as fd:
 
 # Tokenize
 vocab = sorted(list(set(input_text)))
-str_to_tokens = {}
-tokens_to_str= {}
+print(vocab)
+str_to_tokens = {c:i for i,c in enumerate(vocab)}
+tokens_to_str= {i:c for i,c in enumerate(vocab)}
 
 def encode(s):
-    return
+    return [str_to_tokens[c] for c in s]
 
 def decode(t):  
-    return
+    return ''.join([tokens_to_str[i] for i in t])
+
 
 # Train-Test Split 
+text_tensor = torch.tensor(encode(input_text), dtype=torch.long)
+split_num = int(0.9*len(text_tensor))
+
+train_text = text_tensor[:split_num]
+test_text = text_tensor[split_num:]
+
+# Get Batches
+def get_batch(batch_type):
+    curr_data = train_text if batch_type == 'train' else test_text
+    indexes = torch.randint(len(curr_data) - batch_size, (batch_size,))
 
 
 # Loss Function 
+@torch.no_grad()
 def loss_fn():
     return 
 
