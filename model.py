@@ -51,9 +51,34 @@ class AttentionHead(nn.Module):
 
     def __init__(self, head_size):
         super.__init__()
+        # K, Q, V
+
+        self.key = nn.Linear(embed_dim, head_size, bias = False)
+        self.query = nn.Linear(embed_dim, head_size, bias = False)
+        self.value = nn.Linear(embed_dim, head_size, bias = False)
+        
+        # Decoder 
+        self.register_buffer('tril', torch.tril(torch.ones(block_size, block_size)))
+        
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
-        return
+        B,T,C = x.shape
+        
+        keys = self.key(x)
+        queries = self.query(x)
+        values = self.value(x)
+
+        # Affinities 
+        weights = queries @ keys.transpose(-2,-1)
+        weights = weights * keys.shape[-1]**-0.5
+        weights = weights.masked_fill(self.tril[:T, :T] == 0, float('-inf'))
+        weights = F.softmax(weights, dim=-1)
+        weights = self.dropout(weights)
+
+        output = weights @ values
+        return output
+            
  
 
 # Multi-Headed Attention 
@@ -61,18 +86,31 @@ class MultiAttentionHead(nn.Module):
 
     def __init__(self, head_num, head_size):
         super.__init__()
+        self.heads = nn.ModuleList([AttentionHead(head_size) for _ in range(head_num)])
+        self.proj = nn.Linear(head_num * head_size, embed_dim)
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
-        return 
+        output = torch.cat([head(x) for head in self.heads], dim=-1)
+        output = self.proj(output)
+        output = self.dropout(output)
+        return output
+
 
 # ReLU Feed-Forward 
 class FeedForward(nn.Module):
 
     def __init__(self, embed_dim):
         super.__init__()
+        self.net = nn.Sequential(
+            nn.Linear(embed_dim, 4 * embed_dim),
+            nn.ReLU(),
+            nn.Linear(4 * embed_dim, embed_dim)
+            nn.Dropout(dropout),
+        )
 
     def forward(self, x):
-        return
+        return self.net(x)
 
 
 # Model Block 
@@ -80,15 +118,41 @@ class ModelBlock(nn.Module):
 
     def __init__(self, head_num, embed_dim):
         super.__init__()
+        head_size = embed_dim // head_num
+
+        self.attention = MultiAttentionHead(head_num, head_size)
+        self.feedfoward = FeedForward(embed_dim)
+        self.layernorm1 = nn.LayerNorm(embed_dim)
+        self.layernorm2 = nn.LayerNorm(embed_dim)
+
 
     def forward(self, x):
-        return
+        x = x + self.attention(self.layernorm1(x))
+        x = x + self.feedfoward(self.layernorm2(x))
+        return x 
 
 # GPT
 class BrainRotGPT(nn.Module):
 
     def __init__(self):
         super.__init__()
+
+        self.token_embedding_table = nn.Embedding(vocab_size, embed_dim)
+        self.pos_embedding_table = nn.Embedding(block_size, embed_dim)
+        self.block = nn.Sequential(*[ModelBlock(head_num,embed_dim) for _ in range(block_num)])
+        self.layernormfinal= nn.LayerNorm(embed_dim)
+        self.linear = nn.Linear(embed_dim, vocab_size) 
+
+        # initialize weights
+        self.apply(self.init_weights)
+
+    
+    def init_weights(self, module):
+        if isinstance(module, nn.Linear):
+            pass
+        elif isinstance(module, nn.Embedding):
+            pass
+
 
     def forward(self, input_arr, targets=None):
         return
@@ -112,6 +176,7 @@ with open(dataset_path, 'r', encoding='utf-8') as fd:
 
 # Tokenize
 vocab = sorted(list(set(input_text)))
+vocab_size = len(vocab)
 print(vocab)
 str_to_tokens = {c:i for i,c in enumerate(vocab)}
 tokens_to_str= {i:c for i,c in enumerate(vocab)}
@@ -134,18 +199,51 @@ test_text = text_tensor[split_num:]
 def get_batch(batch_type):
     curr_data = train_text if batch_type == 'train' else test_text
     indexes = torch.randint(len(curr_data) - batch_size, (batch_size,))
+    x = torch.stack([curr_data[i:i+block_size] for i in indexes]).to(device)
+    y = torch.stack([curr_data[i+1:i+block_size+1] for i in indexes]).to(device)
+    return x,y
 
 
 # Loss Function 
 @torch.no_grad()
 def loss_fn():
-    return 
+    output = {}
+    gpt_model.eval()
+    for split_type in ['train', 'test']:
+        losses = torch.zeros(eval_iters)
+        for iter in range(eval_iters):
+            X, Y = get_batch(split_type)
+            logits, loss = gpt_model(X,Y)
+            losses[iter] = loss.item()
+        output[split_type] = losses.mean()
+    gpt_model.train()
+    return output
 
 ####################
 
 
 # Training Generation 
+gpt_model = BrainRotGPT()
+optimizer = torch.optim.AdamW(gpt_model.parameters(), lr=alpha)
 
 
+# Training
+# Check pre-trained weights
+for curr_iter in range(train_iters):
+    print(f"Training: Epoch {curr_iter}")
+    
+    # evaluate 
+    if curr_iter == train_iters - 1 or curr_iter % eval_interval:
+        losses = loss_fn()
+        print(f"Training: Epoch {curr_iter} Evaluation: Training {losses['train']}, Test {losses['test']}")
 
+    x_b, y_b = get_batch('train')
 
+    logits, loss = gpt_model(x_b, y_b)
+    optimizer.zero_grad(set_to_none=True)
+    loss.backward()
+    optimizer.step()
+
+# Generation 
+context = torch.zeros((1,1), dtype = torch.long, device=device)
+print(decode(m.generate(context, max_tokens=500)[0].tolist()))
