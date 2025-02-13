@@ -286,11 +286,12 @@ else:
         loss.backward()
         optimizer.step()
 
-if weights_path != "":
-    torch.save({
-        'model_state_dict': model.state_dict(),
-        'optimizer_state_dict': optimizer.state_dict(),
-    }, weights_path)
+        if weights_path != "":
+            torch.save({
+                'model_state_dict': gpt_model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+            }, weights_path)
+            print("Weights Saved")
 
 # Generation 
 context = torch.zeros((1,1), dtype = torch.long, device=device)
