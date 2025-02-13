@@ -139,7 +139,7 @@ class BrainRotGPT(nn.Module):
 
         self.token_embedding_table = nn.Embedding(vocab_size, embed_dim)
         self.pos_embedding_table = nn.Embedding(block_size, embed_dim)
-        self.block = nn.Sequential(*[ModelBlock(head_num,embed_dim) for _ in range(block_num)])
+        self.blocks = nn.Sequential(*[ModelBlock(head_num,embed_dim) for _ in range(block_num)])
         self.layernormfinal= nn.LayerNorm(embed_dim)
         self.linear = nn.Linear(embed_dim, vocab_size) 
 
@@ -149,15 +149,50 @@ class BrainRotGPT(nn.Module):
     
     def init_weights(self, module):
         if isinstance(module, nn.Linear):
-            pass
+            torch.nn.init.normal(module.weight, mean=0.0, std=0.2)
+            if module.bias is not None:
+                torch.nn.init.zeros_(module.bias)
         elif isinstance(module, nn.Embedding):
-            pass
+            torch.nn.init.normal(module.weight, mean=0.0, std=0.2)
 
 
     def forward(self, input_arr, targets=None):
-        return
+        B,T = input_arr.shape
+        
+        # Embedding Tables
+        token_embeds= self.token_embedding_table()
+        position_embeds = self.pos_embedding_table()
+
+        x = token_embeds + position_embeds
+
+        x = self.blocks(x)
+        x = self.layernormfinal(x)
+
+        logits = self.linear(x)
+
+        if target is None:
+            # No loss
+            loss = None
+        else: 
+            B, T, C = logits.shape
+
+            # reshape
+            logits = logits.view(B*T, C)
+            targets = targets.view(B*T)
+            loss = F.cross_entropy(logits, targets)
+        return logits, loss
+
+
 
     def generate(self, input_arr, max_tokens):
+        for _ in range(max_tokens):
+            input_end = input_arr[:, -block_size:]
+            logits, loss = self(input_end)
+            logits_last_time = logits[:,-1,:]
+            probs = F.softmax(logits_last_time, dim=-1)
+            next_char = torch.multinomial(probs, num_sample=1)
+            input_arr = torch.cat((input_arr, next_char), dim=1)
+
         return input_arr 
 
 
