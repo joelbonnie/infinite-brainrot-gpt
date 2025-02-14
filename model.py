@@ -17,7 +17,7 @@ block_size = 256
 
 alpha = 3e-4
 
-train_iters = 6000
+train_iters = 5000
 eval_iters = 100
 eval_interval = 500
 
