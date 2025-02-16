@@ -12,14 +12,14 @@ import os
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-batch_size = 32
+batch_size = 64
 block_size = 256
 
 alpha = 3e-4
 
-train_iters = 100
+train_iters = 6000
 eval_iters = 100
-eval_interval = 20
+eval_interval = 500
 
 embed_dim = 384
 
@@ -149,11 +149,11 @@ class BrainRotGPT(nn.Module):
     
     def init_weights(self, module):
         if isinstance(module, nn.Linear):
-            torch.nn.init.normal(module.weight, mean=0.0, std=0.2)
+            torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
             if module.bias is not None:
                 torch.nn.init.zeros_(module.bias)
         elif isinstance(module, nn.Embedding):
-            torch.nn.init.normal(module.weight, mean=0.0, std=0.2)
+            torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
 
 
     def forward(self, input_arr, targets=None):
