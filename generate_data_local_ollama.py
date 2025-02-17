@@ -6,11 +6,12 @@ import os
 ####################
 ## Defining Constants and Variables
 OLLAMA_URL = "http://localhost:11434/api/generate"
+max_iters = 20
 brainrot_words = ""
 brainrot_text = ""
 brainrot_file = "brainrot.txt"
 example_brainrot_words_1 = "slay, rizz, gyatt, sigma, skibidi, fanum tax, Ohio, NPC, edge, babygirl, lore, delulu, bussin, oomfie, chungus, sneaky link, bogged, glizzy, bala, grimy, ice, W, L, ewokie, mewing, vamp, baddie, zaza, situationship, iykyk, sigma grindset."
-example_brainrot_words_2 = "Gyatt, Rizz, Skibidi, Sigma, Fanum Tax, Ohio, Edge, Babygirl, Bussin, NPC, Glazing, Lore, Him/Her, Blorbo, Situationship, Delulu, Balah, Pressing, Siren, Pookie.""
+example_brainrot_words_2 = "Gyatt, Rizz, Skibidi, Sigma, Fanum Tax, Ohio, Edge, Babygirl, Bussin, NPC, Glazing, Lore, Maxxing, Chungus, Situationship, Delulu, Grindset, Pressing, High Key, Pookie, Mewing, UWU"
 ####################
 
 
@@ -41,16 +42,13 @@ def generate_brainrot_words():
 ####################
 ## Text Generation 
 def generate_brainrot_text():
-    brainrot_words = generate_brainrot_words()
+    # brainrot_words = generate_brainrot_words()
+    brainrot_words = example_brainrot_words_2
     brainrot_text_gen_prompt = f"""
         I am trying to create a text dataset to train a model on brainrot, that is, gen-z/gen alpha modern TikTok slang. Some examples for these words are: 
                 {brainrot_words}
-
-
-        I want the text generated to be natural , phrases or chunks of cohesive text that contain these words.
-        DO NOT INCLUDE ANY QUOTATION MARKS OR EMOJIS - ONLY THE TEXT. DO NOT NUMBER OR PROVIDE AN INTRO.
-
-        Since I need this dataset to be big, I will use this prompt multiple times and aggregate the results - so be creative with your response. ONLY include the text in your response to speed up cleaning and processing times. ONCE AGAIN - DO NOT INCLUDE any quotation marks or emojis in your response - ONLY THE TEXT. Thanks!
+        DO NOT INCLUDE ANY QUOTATION MARKS OR EMOJIS - ONLY THE TEXT. DO NOT NUMBER OR PROVIDE AN INTRO. It can be conversational, put yourself into the mind of a brainrotted teenager!  I want the text generated to be natural , phrases or chunks of cohesive text that contain these words. 
+       Try to be creative with your response. ONLY include the text in your response to speed up cleaning and processing times. ONCE AGAIN - DO NOT INCLUDE any quotation marks or emojis in your response - ONLY THE TEXT. Thanks!
     """
 
     payload_text_gen = {
@@ -75,7 +73,12 @@ def generate_brainrot_text():
 ####################
 ## Write to file
 
-generate_brainrot_text()
+
+for i in range(max_iters):
+    print(f"Text Generation Iter: {i}")
+    new_brainrot_text = "\n" + generate_brainrot_text()
+    with open(brainrot_file, "a") as fd: 
+            fd.write(new_brainrot_text)
 
 
 ####################
