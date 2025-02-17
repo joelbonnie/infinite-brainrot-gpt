@@ -6,7 +6,7 @@ import os
 ####################
 ## Defining Constants and Variables
 OLLAMA_URL = "http://localhost:11434/api/generate"
-max_iters = 20
+max_iters = 40
 brainrot_words = ""
 brainrot_text = ""
 brainrot_file = "brainrot.txt"
