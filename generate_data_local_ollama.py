@@ -2,6 +2,7 @@ import requests
 import json 
 import re
 import os
+import random
 
 ####################
 ## Defining Constants and Variables
@@ -10,8 +11,13 @@ max_iters = 40
 brainrot_words = ""
 brainrot_text = ""
 brainrot_file = "brainrot.txt"
-example_brainrot_words_1 = "slay, rizz, gyatt, sigma, skibidi, fanum tax, Ohio, NPC, edge, babygirl, lore, delulu, bussin, oomfie, chungus, sneaky link, bogged, glizzy, bala, grimy, ice, W, L, ewokie, mewing, vamp, baddie, zaza, situationship, iykyk, sigma grindset."
-example_brainrot_words_2 = "Gyatt, Rizz, Skibidi, Sigma, Fanum Tax, Ohio, Edge, Babygirl, Bussin, NPC, Glazing, Lore, Maxxing, Chungus, Situationship, Delulu, Grindset, Pressing, High Key, Pookie, Mewing, UWU"
+example_brainrot_words_1 = "slay, rizz, gyatt, sigma, skibidi, fanum tax, Ohio, NPC, edge, babygirl, lore, delulu, bussin, oomfie, chungus, sneaky link, bogged, glizzy, bala, grimy, ice, W, L, ewokie, mewing, vamp, baddie, zaza, situationship, iykyk, sigma grindset,"
+example_brainrot_words_2 = "Gyatt, Rizz, Skibidi, Sigma, Fanum Tax, Ohio, Edge, Babygirl, Bussin, NPC, Glazing, Lore, Maxxing, Chungus, Situationship, Delulu, Grindset, Pressing, High Key, Pookie, Mewing, UWU,"
+example_brainrot_words_3 = "skibidi, gyatt, rizz, fanum tax, oppenheimer style, sigma, lobotomy, kai cenat, grimace shake, delulu, glazing, leonardo dicaprio walking, mewing, NPC, ohio, skibidi toilet, gen alpha, pookie, ick, pick me, lore, eepy,bussin, no cap, cap, ate, slay, W, L, ratio, touch grass, bestie, main character, gatekeep, gaslight, girlboss, hot girl walk, it's giving, perioooodt, sheesh, sus, sending me, hits different, big yikes, lowkey, highkey,tea, spill, vibes, vibing, extra, lit, fire, snatched, ghosted, salty, gucci, GOAT, clout, FOMO, stan, simp, vibin, POV, on God, frfr, deadass, bet, drip,  hits different,  main character energy, it's giving, let him cook, let her cook, let them cook, be so fr, not them, sir/ma'am, iykyk, say sike rn, clowning, clownery, do it for the plot, the ick"
+
+example_brainrot_words_concat = example_brainrot_words_1 + example_brainrot_words_2 + example_brainrot_words_3
+example_brainrot_words_list = []
+
 ####################
 
 
@@ -41,9 +47,9 @@ def generate_brainrot_words():
 
 ####################
 ## Text Generation 
+
 def generate_brainrot_text():
     # brainrot_words = generate_brainrot_words()
-    brainrot_words = example_brainrot_words_2
     brainrot_text_gen_prompt = f"""
         I am trying to create a text dataset to train a model on brainrot, that is, gen-z/gen alpha modern TikTok slang. Some examples for these words are: 
                 {brainrot_words}
@@ -70,15 +76,20 @@ def generate_brainrot_text():
 ####################
 
 
+
+
+
 ####################
 ## Write to file
+
+example_brainrot_words_list = example_brainrot_words_concat.split(",")
 
 
 for i in range(max_iters):
     print(f"Text Generation Iter: {i}")
+    brainrot_words = random.sample(example_brainrot_words_list, 8)
     new_brainrot_text = "\n" + generate_brainrot_text()
     with open(brainrot_file, "a") as fd: 
             fd.write(new_brainrot_text)
-
 
 ####################
