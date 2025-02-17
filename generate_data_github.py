@@ -47,7 +47,7 @@ I want the text generated to be natural , phrases or chunks of cohesive text tha
 
 """
 
-for i in range(5):
+for i in range(1):
     brainrot_text_response = client.complete(
         messages=[
             UserMessage(brainrot_text_gen_prompt),

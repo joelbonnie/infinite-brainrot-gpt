@@ -9,6 +9,8 @@ OLLAMA_URL = "http://localhost:11434/api/generate"
 brainrot_words = ""
 brainrot_text = ""
 brainrot_file = "brainrot.txt"
+example_brainrot_words_1 = "slay, rizz, gyatt, sigma, skibidi, fanum tax, Ohio, NPC, edge, babygirl, lore, delulu, bussin, oomfie, chungus, sneaky link, bogged, glizzy, bala, grimy, ice, W, L, ewokie, mewing, vamp, baddie, zaza, situationship, iykyk, sigma grindset."
+example_brainrot_words_2 = "Gyatt, Rizz, Skibidi, Sigma, Fanum Tax, Ohio, Edge, Babygirl, Bussin, NPC, Glazing, Lore, Him/Her, Blorbo, Situationship, Delulu, Balah, Pressing, Siren, Pookie.""
 ####################
 
 
