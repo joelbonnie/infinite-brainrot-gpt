@@ -13,12 +13,12 @@ import os
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 batch_size = 64
-block_size = 256
+block_size = 32
 
 alpha = 3e-4
 
-train_iters = 5000
-eval_iters = 100
+train_iters = 10000
+eval_iters = 200
 eval_interval = 500
 
 embed_dim = 384
@@ -33,7 +33,7 @@ dropout = 0.2
 ####################
 ## Constants 
 
-dataset_path = "input.txt"
+dataset_path = "processed_brainrot.txt"
 weights_path = "weights.pth"
 
 ####################
@@ -293,6 +293,8 @@ else:
         }, weights_path)
         print("Weights Saved")
 
-# Generation 
+# Text Generation 
 context = torch.zeros((1,1), dtype = torch.long, device=device)
 print(decode(gpt_model.generate(context, max_tokens=500)[0].tolist()))
+
+
