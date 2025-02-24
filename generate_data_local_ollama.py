@@ -97,6 +97,7 @@ def process_text():
         cleaned_text = re.sub(r'\d+\.', '', text)
         cleaned_text = re.sub(r'["\d]', '', cleaned_text)
         cleaned_text = re.sub(r'[^\w\s.,!?]', '', cleaned_text)
+        cleaned_text = re.sub(r'^\s*\n', '', cleaned_text, flags=re.MULTILINE)
         return cleaned_text
 
     with open(brainrot_file, "r", encoding="utf-8") as fd:

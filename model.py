@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 import os
+import sentencepiece as spm
 
 
 ####################
@@ -17,11 +18,11 @@ block_size = 32
 
 alpha = 3e-4
 
-train_iters = 10000
+train_iters = 6000
 eval_iters = 200
 eval_interval = 500
 
-embed_dim = 384
+embed_dim = 128
 
 head_num = 6
 block_num = 6
@@ -33,8 +34,9 @@ dropout = 0.2
 ####################
 ## Constants 
 
-dataset_path = "processed_brainrot.txt"
-weights_path = "weights.pth"
+dataset_path = "text/processed_brainrot_trimmed.txt"
+weights_path = "weights/weights_unigram.pth"
+tokenizer_model_path = "token/brainrot_tokenizer.model"
 
 ####################
 
@@ -43,7 +45,7 @@ weights_path = "weights.pth"
 ####################
 ## Model 
 
-torch.manual_seed(42)
+#torch.manual_seed(42)
 
 
 # Self-Attention Head 
@@ -210,6 +212,7 @@ with open(dataset_path, 'r', encoding='utf-8') as fd:
     input_text = fd.read()
 
 # Tokenize
+"""
 vocab = sorted(list(set(input_text)))
 vocab_size = len(vocab)
 print(vocab)
@@ -221,6 +224,18 @@ def encode(s):
 
 def decode(t):  
     return ''.join([tokens_to_str[i] for i in t])
+"""
+
+sp = spm.SentencePieceProcessor()
+sp.load(tokenizer_model_path)
+
+def encode(text):
+    return sp.encode(text, out_type=int)
+
+def decode(tokens):
+    return sp.decode(tokens)
+
+vocab_size = sp.get_piece_size()
 
 
 # Train-Test Split 
@@ -295,6 +310,6 @@ else:
 
 # Text Generation 
 context = torch.zeros((1,1), dtype = torch.long, device=device)
-print(decode(gpt_model.generate(context, max_tokens=500)[0].tolist()))
+print(decode(gpt_model.generate(context, max_tokens=100)[0].tolist()))
 
 
